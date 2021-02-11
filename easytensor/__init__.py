@@ -1,1 +1,1 @@
-print("You are using EasyTensor. Enjoy!")
+from easytensor.auth import authenticate
