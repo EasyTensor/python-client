@@ -41,15 +41,15 @@ def create_model_archive(model_location):
     return tar_location
 
 
-def upload_model(model_location):
+def upload_model(model_name, model_location):
     """
     """
     archive_lcoation = create_model_archive(model_location)
-    upload_archive(archive_lcoation)
+    upload_archive(model_name, archive_lcoation)
 
 
 @needs_auth
-def upload_archive(filename):
+def upload_archive(model_name, filename):
     if not os.path.isfile(filename):
         LOGGER.error("Can not find file %s", filename)
         return
@@ -73,7 +73,7 @@ def upload_archive(filename):
         MODELS_URL,
         json={
             "address": model_id,
-            "name": filename.split("/")[-1],
+            "name": model_name,
             "size": size,
         },
         headers={"Authorization": "Bearer {}".format(auth_token)}
