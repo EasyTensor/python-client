@@ -48,7 +48,7 @@ def attempt_auth(username: str, password: str):
 
 def get_auth_token():
     config = get_config()
-    if "access_token" not in config:
+    if not check_auth():
         username, password = ask_credentials()
         auth_token = attempt_auth(username, password)
         token_expire = (
@@ -96,6 +96,6 @@ def needs_auth(func):
     def wrapper(*args, **kwargs):
         if not check_auth() and not refresh_auth():
             print("Access token is expired. Please reauthenticate.")
-            get_auth_token()
+            # get_auth_token()
         return func(*args, **kwargs)
     return wrapper

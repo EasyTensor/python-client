@@ -1,4 +1,6 @@
 import os
+import tarfile
+import tempfile
 import uuid
 import logging
 import requests
@@ -29,7 +31,25 @@ def get_upload_url(model_name: str):
     return res["url"], res["method"]
 
 
-def upload_model(filename):
+def create_model_archive(model_location):
+    """
+    Creates a temporary archvie of the model and returns its location.
+    """
+    _, tar_location = tempfile.mkstemp()
+    with tarfile.open(tar_location, "w:gz") as tarout:
+        tarout.add(model_location, arcname="")
+    return tar_location
+
+
+def upload_model(model_location):
+    """
+    """
+    archive_lcoation = create_model_archive(model_location)
+    upload_archive(archive_lcoation)
+
+
+@needs_auth
+def upload_archive(filename):
     if not os.path.isfile(filename):
         LOGGER.error("Can not find file %s", filename)
         return

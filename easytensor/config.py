@@ -5,7 +5,7 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
-_EASYTENSOR_PATH = os.path.join(Path.home(), ".easytensor")
+_EASYTENSOR_PATH = os.path.join(str(Path.home()), ".easytensor")
 _CONFIG_PATH = os.path.join(_EASYTENSOR_PATH, "config.json")
 
 
