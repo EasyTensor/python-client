@@ -4,7 +4,7 @@ import tempfile
 import uuid
 import logging
 import requests
-from easytensor.urls import UPLOAD_URL_REQUEST_URL, MODELS_URL
+from easytensor.urls import UPLOAD_URL_REQUEST_URL, MODELS_URL, QUERY_TOKEN_URL
 from easytensor.auth import get_auth_token, needs_auth
 
 LOGGER = logging.getLogger(__name__)
@@ -41,15 +41,23 @@ def create_model_archive(model_location):
     return tar_location
 
 
-def upload_model(model_name, model_location):
+def upload_model(model_name, model_location, create_token=True):
     """
+    Returns the model ID and a query access token.
+    Creates a query access token for the model by default.
     """
     archive_lcoation = create_model_archive(model_location)
-    upload_archive(model_name, archive_lcoation)
+    model_id = upload_archive(model_name, archive_lcoation)
+    if not create_token:
+        return model_id, None
+    return model_id, create_query_token(model_id)
 
 
 @needs_auth
-def upload_archive(model_name, filename):
+def upload_archive(model_name, filename, create_token=True):
+    """
+    Uplaods the archive and returns the ID of the model that was uploaded.
+    """
     if not os.path.isfile(filename):
         LOGGER.error("Can not find file %s", filename)
         return
@@ -80,4 +88,20 @@ def upload_archive(model_name, filename):
     )
 
     response.raise_for_status()
-    print(response)
+    res = response.json()
+    return res["id"]
+
+
+@needs_auth
+def create_query_token(model_id):
+    auth_token = get_auth_token()
+    response = requests.post(
+        QUERY_TOKEN_URL,
+        json={
+            "model": model_id
+        },
+        headers={"Authorization": "Bearer {}".format(auth_token)}
+    )
+    response.raise_for_status()
+    res = response.json()
+    return res["id"]

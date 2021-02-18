@@ -17,10 +17,12 @@ def check_auth():
         return False
     if "token_expire" not in config:
         return False
-    token_expire = datetime.strptime(config["token_expire"], DATETIME_STR_FORMAT)
+    token_expire = datetime.strptime(
+        config["token_expire"], DATETIME_STR_FORMAT)
     if token_expire < datetime.now():
         return False
     return True
+
 
 def ask_credentials():
     """
@@ -43,20 +45,23 @@ def attempt_auth(username: str, password: str):
     )
     resp = response.json()
     assert "access_token" in resp
-    return resp["access_token"]
+    return resp["access_token"], resp["refresh_token"]
 
 
 def get_auth_token():
     config = get_config()
     if not check_auth():
         username, password = ask_credentials()
-        auth_token = attempt_auth(username, password)
+        auth_token, refresh_token = attempt_auth(username, password)
         token_expire = (
             datetime.now() + TOKEN_EXPIRE_DELTA
         ).strftime(DATETIME_STR_FORMAT)
         update_config(
-            {"access_token": auth_token,
-             "token_expire": token_expire}
+            {
+                "access_token": auth_token,
+                "token_expire": token_expire,
+                "refresh_token": refresh_token,
+            }
         )
         return auth_token
     return config["access_token"]
