@@ -43,7 +43,8 @@ def ensure_easytensor_config():
                 raise BaseException("config is malformed.")
     except BaseException:
         LOGGER.warning(
-            "Config at %s is malformed. Repacing with an empty config.", _CONFIG_PATH)
+            "Config at %s is malformed. Repacing with an empty config.", _CONFIG_PATH
+        )
         os.remove(_CONFIG_PATH)
         with open(_CONFIG_PATH, "w") as fout:
             json.dump({}, fout, indent=2)

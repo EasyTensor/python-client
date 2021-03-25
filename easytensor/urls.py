@@ -1,4 +1,4 @@
-from easytensor.config import get_config
+from easytensor.config import get_config, update_config
 
 BASE_URL = ""
 AUTHENTICATION_URL = ""
@@ -24,5 +24,10 @@ def reload_urls():
     QUERY_TOKEN_URL = BASE_URL + "/v1/query-access-token/"
 
 
-
 reload_urls()
+
+
+def set_base_url(url: str):
+    """.DS_Store"""
+    update_config({"base_url": url})
+    reload_urls()

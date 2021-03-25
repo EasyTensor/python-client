@@ -4,7 +4,6 @@ import getpass
 import requests
 from datetime import datetime, time, timedelta
 from easytensor.config import get_config, update_config
-from easytensor.urls import AUTHENTICATION_URL, REFRESH_TOKEN_URL
 
 LOGGER = logging.getLogger(__name__)
 DATETIME_STR_FORMAT = "%m/%d/%Y, %H:%M:%S"
@@ -17,8 +16,7 @@ def check_auth():
         return False
     if "token_expire" not in config:
         return False
-    token_expire = datetime.strptime(
-        config["token_expire"], DATETIME_STR_FORMAT)
+    token_expire = datetime.strptime(config["token_expire"], DATETIME_STR_FORMAT)
     if token_expire < datetime.now():
         return False
     return True
@@ -35,13 +33,11 @@ def ask_credentials():
 
 
 def attempt_auth(username: str, password: str):
-    response = requests.post(
-        url=AUTHENTICATION_URL,
-        json={
-            "username": username,
-            "password": password
-        }
+    # support hot reloading the URL endpoint
+    from easytensor.urls import AUTHENTICATION_URL
 
+    response = requests.post(
+        url=AUTHENTICATION_URL, json={"username": username, "password": password}
     )
     resp = response.json()
     assert "access_token" in resp
@@ -53,9 +49,9 @@ def get_auth_token():
     if not check_auth():
         username, password = ask_credentials()
         auth_token, refresh_token = attempt_auth(username, password)
-        token_expire = (
-            datetime.now() + TOKEN_EXPIRE_DELTA
-        ).strftime(DATETIME_STR_FORMAT)
+        token_expire = (datetime.now() + TOKEN_EXPIRE_DELTA).strftime(
+            DATETIME_STR_FORMAT
+        )
         update_config(
             {
                 "access_token": auth_token,
@@ -73,14 +69,14 @@ def refresh_auth():
     Returns False if refresh was not successful.
     Returns True if the refresh was successful.
     """
+    # support hot reloading the URL endpoint
+    from easytensor.urls import REFRESH_TOKEN_URL
+
     config = get_config()
     if "refresh_token" not in config:
         return False
     response = requests.post(
-        REFRESH_TOKEN_URL,
-        json={
-            "refresh": config["refresh_token"]
-        }
+        REFRESH_TOKEN_URL, json={"refresh": config["refresh_token"]}
     )
 
     if response.status_code == 401:
@@ -97,10 +93,12 @@ def needs_auth(func):
     the passed in function. If authentication is invalid or expired,
     the user is asked to provide credentials and is authenticated again.
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if not check_auth() and not refresh_auth():
             print("Access token is expired. Please reauthenticate.")
             # get_auth_token()
         return func(*args, **kwargs)
+
     return wrapper
