@@ -1,3 +1,6 @@
+"""
+A module for managing the configuration of the easytensor package.
+"""
 import os
 from pathlib import Path
 import json
@@ -7,6 +10,10 @@ LOGGER = logging.getLogger(__name__)
 
 _EASYTENSOR_PATH = os.path.join(str(Path.home()), ".easytensor")
 _CONFIG_PATH = os.path.join(_EASYTENSOR_PATH, "config.json")
+
+
+class BadConfig(BaseException):
+    """ A simple exception for errors during config management."""
 
 
 def get_config():
@@ -20,6 +27,9 @@ def get_config():
 
 
 def ensure_easytensor_path():
+    """
+    Creates the easytensor config path if it doesn't exist.
+    """
     if not os.path.isdir(_EASYTENSOR_PATH):
         os.mkdir(_EASYTENSOR_PATH)
 
@@ -40,8 +50,8 @@ def ensure_easytensor_config():
         with open(_CONFIG_PATH) as fin:
             config = json.load(fin)
             if not isinstance(config, dict):
-                raise BaseException("config is malformed.")
-    except BaseException:
+                raise BadConfig("config is malformed.")
+    except (OSError, json.decoder.JSONDecodeError):
         LOGGER.warning(
             "Config at %s is malformed. Repacing with an empty config.", _CONFIG_PATH
         )

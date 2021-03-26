@@ -7,3 +7,6 @@ publish:
 
 test-publish:
 	python3.9 -m twine upload --repository testpypi dist/*
+
+lint:
+	pylint easytensor

@@ -1,23 +1,31 @@
+"""
+A module for saving and uploading pytorch models.
+A PyTorch model requires slightly more pieces of information than a TensorFlow
+model to run correctly.
+
+1. The serialized parameters (weights and biases) of the model. EasyTensor takes
+care of that for you.
+2. The model class, including a prediction method. You have to do this. This
+model class must include a predict_single method that can take in your native
+input format (e.g. text, image bytes, number array) and return a human readible
+output. You can think of the predict_single method as where the preprocess,
+predict, and postprocess happens.
+"""
 import os
 import tarfile
 import tempfile
 import importlib
 import inspect
 import shutil
-import uuid
 import logging
-import requests
-from easytensor.urls import UPLOAD_URL_REQUEST_URL, MODELS_URL, QUERY_TOKEN_URL
-from easytensor.auth import get_auth_token, needs_auth
+from torch import save as torch_save
+from easytensor.constants import Framework
 from easytensor.upload import (
     create_query_token,
-    get_upload_url,
     create_model_object,
     upload_archive,
 )
-from easytensor.constants import Framework
 
-from torch import save as torch_save
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,7 +50,7 @@ def check_model_class_definition_file(model_class_definition_file):
     """
 
     class BadModelFile(BaseException):
-        pass
+        """ An exception thrown for bad model files. """
 
     if not os.path.isfile(model_class_definition_file):
         raise FileNotFoundError(
@@ -94,7 +102,7 @@ def export_pytorch_weights(model, temporary_directory: str):
     """
 
     class BadModel(BaseException):
-        pass
+        """ Exception for when a non-model object is passed. """
 
     if model is None or not hasattr(model, "state_dict"):
         raise BadModel(
@@ -135,7 +143,7 @@ def upload_model(
     model_class_file = os.path.join(temporary_directory, "model.py")
     shutil.copy2(model_class_definition_file, model_class_file)
     archive_location = create_model_archive(model_weight_file, model_class_file)
-    model_address, model_size = upload_archive(model_name, archive_location)
+    model_address, model_size = upload_archive(archive_location)
     model_id = create_model_object(
         model_address, model_name, model_size, Framework.PYTORCH
     )

@@ -1,6 +1,9 @@
+"""
+A module for utility methods around upload models to the EasyTensor cloud.
+Since each framework has its own upload requirements, these are managed separately.
+See easytensor/[framework]/upload.py for specific framework upload functions.
+"""
 import os
-import tarfile
-import tempfile
 import uuid
 import logging
 import requests
@@ -9,6 +12,10 @@ from easytensor.auth import get_auth_token, needs_auth
 from easytensor.constants import Framework
 
 LOGGER = logging.getLogger(__name__)
+
+
+class UploadException(BaseException):
+    """ A simple exception for failures during upload."""
 
 
 @needs_auth
@@ -28,13 +35,13 @@ def get_upload_url(model_name: str):
 
 
 @needs_auth
-def upload_archive(model_name, filename, create_token=True):
+def upload_archive(filename):
     """
     Uplaods the archive and returns the ID of the model that was uploaded.
     """
     if not os.path.isfile(filename):
-        LOGGER.error("Can not find file %s", filename)
-        return
+        raise UploadException("Can not find file {}".format(filename))
+
     size = os.path.getsize(filename)
     with open(filename, "rb") as fin:
         model = fin.read()
@@ -79,6 +86,9 @@ def create_model_object(address: str, name: str, size: int, framework: Framework
 
 @needs_auth
 def create_query_token(model_id):
+    """
+    Creates a query token for the model with the passed model id.
+    """
     auth_token = get_auth_token()
     response = requests.post(
         QUERY_TOKEN_URL,

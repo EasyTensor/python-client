@@ -1,14 +1,13 @@
-import os
+"""
+A module that helps upload tensorflow models to EasyTensor.
+The only requirement for a model is that it is exported to disk.
+Tensorflow models are packaged in a tar file and uploaded directly.
+"""
 import tarfile
 import tempfile
-import uuid
 import logging
-import requests
-from easytensor.urls import UPLOAD_URL_REQUEST_URL, MODELS_URL, QUERY_TOKEN_URL
-from easytensor.auth import get_auth_token, needs_auth
 from easytensor.upload import (
     create_query_token,
-    get_upload_url,
     create_model_object,
     upload_archive,
 )
@@ -33,7 +32,7 @@ def upload_model(model_name, model_location, create_token=True):
     Creates a query access token for the model by default.
     """
     archive_lcoation = create_model_archive(model_location)
-    model_address, model_size = upload_archive(model_name, archive_lcoation)
+    model_address, model_size = upload_archive(archive_lcoation)
     model_id = create_model_object(
         model_address, model_name, model_size, Framework.TENSORFLOW
     )

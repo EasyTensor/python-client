@@ -1,3 +1,6 @@
+"""
+A module that exports the URLS needed for this library to work.
+"""
 from easytensor.config import get_config, update_config
 
 BASE_URL = ""
@@ -7,8 +10,13 @@ UPLOAD_URL_REQUEST_URL = ""
 MODELS_URL = ""
 QUERY_TOKEN_URL = ""
 
+# pylint: disable=global-statement
+
 
 def reload_urls():
+    """
+    A handy method that reloads the URLS if any of them have been changed in the configuration.
+    """
     global BASE_URL
     global AUTHENTICATION_URL
     global UPLOAD_URL_REQUEST_URL
@@ -28,6 +36,6 @@ reload_urls()
 
 
 def set_base_url(url: str):
-    """.DS_Store"""
+    """Resets the base URL. Handy for when running this library against localhost"""
     update_config({"base_url": url})
     reload_urls()

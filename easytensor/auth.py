@@ -1,20 +1,27 @@
+"""
+A module to manage authentication for the user.
+"""
 import logging
 import functools
 import getpass
+from datetime import datetime, timedelta
 import requests
-from datetime import datetime, time, timedelta
 from easytensor.config import get_config, update_config
 
 LOGGER = logging.getLogger(__name__)
 DATETIME_STR_FORMAT = "%m/%d/%Y, %H:%M:%S"
 TOKEN_EXPIRE_DELTA = timedelta(hours=24)
+# pylint: disable=import-outside-toplevel
 
 
 def check_auth():
+    """
+    Returns True if the user session is authenticated, False otherwise.
+    If the session is expired or not present, returns False.
+    TODO: safely parse date.
+    """
     config = get_config()
-    if "access_token" not in config:
-        return False
-    if "token_expire" not in config:
+    if "access_token" not in config or "token_expire" not in config:
         return False
     token_expire = datetime.strptime(config["token_expire"], DATETIME_STR_FORMAT)
     if token_expire < datetime.now():
@@ -33,6 +40,10 @@ def ask_credentials():
 
 
 def attempt_auth(username: str, password: str):
+    """
+    Attempts to authenticate the user via the passed credentials.
+    Returns an access_token and a refresh_token. Raises an error otherwise.
+    """
     # support hot reloading the URL endpoint
     from easytensor.urls import AUTHENTICATION_URL
 
@@ -45,6 +56,10 @@ def attempt_auth(username: str, password: str):
 
 
 def get_auth_token():
+    """
+    Returns the authentication token of the user. If the user is not authenticated,
+    the user is prompted to login.
+    """
     config = get_config()
     if not check_auth():
         username, password = ask_credentials()
