@@ -11,7 +11,10 @@ pip install easytensor
 ```
 
 # Usage
+
 Once you have a model exported to your local storage, you can upload it to easytensor in one line of code.
+
+## TensorFlow
 
 ### Exporting and uploading a model
 
@@ -33,11 +36,10 @@ tf.keras.models.save_model(
 )
 
 # Upload it to easytensor.
-model_id, access_token = easytensor.upload_model("My first model", export_path)
+model_id, access_token = easytensor.tensorflow.upload_model("My first model", export_path)
 print("model ID:", model_id)
 print("access token:", access_token)
 ```
-
 
 ### Running prediction on the cloud
 
@@ -57,27 +59,30 @@ print("Response from server:")
 pprint(response.json())
 ```
 
-# Running Examples
+# Examples
 
 The library comes with a few example Jupyter notebooks that walk you through a few possible workflows. They are helpful if you are starting out with ML or remote model prediction.
 
 #### Requirements
+
 - Tensorflow 2. TF2 currently (early 2021) [requires a python version 3.5-3.8](https://www.tensorflow.org/install). You will have to install a compatible version of python.
 - virtualenv
 - jupyter notebook
 
-
 ##### For Mac
+
 ```
 brew install python@3.8
 ```
 
 ##### For Ubuntu
+
 ```
 sudo apt install python3.8 python3.8-dev
 ```
 
 To run the examples, create a python virtual env, and install jupyter notebook.
+
 ```bash
 # install virtualenv
 pip3 install virtualenv
@@ -92,8 +97,9 @@ source ~/virtualenv-3.8/bin/activate
 pip install notebook ipywidgets
 
 # run jupyter notebook
-jupyter notebook 
+jupyter notebook
 ```
 
 # Questions and Help
+
 If you have any querstions about how EasyTensor works or want help with serving your ML model, please contact me directly at [kamal@easytensor.com](mailto:kamal@easytensor.com). I'm here to help!
