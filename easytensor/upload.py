@@ -11,6 +11,8 @@ from easytensor.urls import UPLOAD_URL_REQUEST_URL, MODELS_URL, QUERY_TOKEN_URL
 from easytensor.auth import get_auth_token, needs_auth
 from easytensor.constants import Framework
 
+from tqdm import tqdm
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -41,20 +43,26 @@ def upload_archive(filename):
     """
     if not os.path.isfile(filename):
         raise UploadException("Can not find file {}".format(filename))
-
-    size = os.path.getsize(filename)
-    with open(filename, "rb") as fin:
-        model = fin.read()
     model_address = str(uuid.uuid4())
     upload_url, upload_method = get_upload_url(model_address)
-    LOGGER.info("Uploading ...")
-    response = requests.request(
-        method=upload_method,
-        url=upload_url,
-        data=model,
-        headers={"Content-Type": "application/octet-stream"},
-    )
-    response.raise_for_status()
+    size = os.path.getsize(filename)
+    with open(filename, "rb") as in_file:
+        total_bytes = os.fstat(in_file.fileno()).st_size
+        with tqdm.wrapattr(
+            in_file,
+            "read",
+            total=total_bytes,
+            miniters=1,
+            desc="Uploading to EasyTensor",
+        ) as file_obj:
+            response = requests.request(
+                method=upload_method,
+                url=upload_url,
+                data=file_obj,
+                headers={"Content-Type": "application/octet-stream"},
+            )
+            response.raise_for_status()
+
     return model_address, size
 
 

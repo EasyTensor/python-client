@@ -6,3 +6,4 @@ from easytensor.urls import set_base_url
 from easytensor.constants import Framework
 from easytensor import tensorflow
 from easytensor import pytorch
+from easytensor import transformers

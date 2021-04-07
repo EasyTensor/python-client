@@ -11,3 +11,4 @@ class Framework(Enum):
 
     TENSORFLOW = "TF"
     PYTORCH = "PT"
+    TRANSFORMERS = "TR"
