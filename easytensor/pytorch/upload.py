@@ -20,6 +20,7 @@ import shutil
 import logging
 from torch import save as torch_save
 from easytensor.constants import Framework
+from easytensor.auth import needs_auth
 from easytensor.upload import (
     create_query_token,
     create_model_object,
@@ -113,6 +114,7 @@ def export_pytorch_weights(model, temporary_directory: str):
     return os.path.join(temporary_directory, "model.pt")
 
 
+@needs_auth
 def upload_model(
     model_name,
     model,

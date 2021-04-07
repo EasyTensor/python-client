@@ -18,7 +18,7 @@ import importlib
 import inspect
 import shutil
 import logging
-from transformers import PreTrainedModel
+from easytensor.auth import needs_auth
 from easytensor.constants import Framework
 from easytensor.upload import (
     create_query_token,
@@ -92,6 +92,7 @@ def check_model_class_definition_file(model_class_definition_file):
         )
 
 
+@needs_auth
 def upload_model(
     model_name,
     model,

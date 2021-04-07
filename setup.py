@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="easytensor",  # Replace with your own username
-    version="0.0.5",
+    version="0.0.7",
     author="Kamal Kamalaldin",
     author_email="kamal@easytensor.com",
     description="The official python cient of EasyTensor",
