@@ -7,11 +7,11 @@ import os
 import uuid
 import logging
 import requests
+from tqdm import tqdm
 from easytensor.urls import UPLOAD_URL_REQUEST_URL, MODELS_URL, QUERY_TOKEN_URL
 from easytensor.auth import get_auth_token, needs_auth
 from easytensor.constants import Framework
 
-from tqdm import tqdm
 
 LOGGER = logging.getLogger(__name__)
 

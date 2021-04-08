@@ -12,6 +12,7 @@ output. You can think of the predict_single method as where the preprocess,
 predict, and postprocess happens.
 """
 import os
+import io
 import tarfile
 import tempfile
 import importlib
@@ -19,6 +20,8 @@ import inspect
 import shutil
 import logging
 from torch import save as torch_save
+from pyflakes.api import checkRecursive
+from pyflakes.reporter import Reporter
 from easytensor.constants import Framework
 from easytensor.auth import needs_auth
 from easytensor.upload import (
@@ -27,7 +30,7 @@ from easytensor.upload import (
     upload_archive,
 )
 
-
+# pylint: disable=protected-access
 LOGGER = logging.getLogger(__name__)
 
 
@@ -69,6 +72,17 @@ def check_model_class_definition_file(model_class_definition_file):
                 model_class_definition_file
             )
         )
+
+    warn_stream = io.StringIO("")
+    error_stream = io.StringIO("")
+    reporter = Reporter(warn_stream, error_stream)
+    num_errors = checkRecursive(["model.py"], reporter)
+    if num_errors > 0:
+        raise BadModelFile(
+            f"Found {num_errors} error(s) in model file. Please fix them and try again.\n"
+            + warn_stream.getvalue()
+        )
+
     module = importlib.import_module(model_class_definition_file[:-3])
     classes = [
         clas[1]
@@ -120,26 +134,26 @@ def upload_model(
     model,
     model_class_definition_file,
     create_token=True,
-    saved_model_weights=None,
+    model_weights_dir=None,
 ):
     """
     Uploads the passed model and the model class definition to be served by EasyTensor.
 
-    If saved_model_weights is passed, the parameter will be used as the weights
+    If model_weights_dir is passed, the parameter will be used as the weights
     file and `model` will be ignored
 
     Returns the model ID and a query access token.
     Creates a query access token for the model by default.
     """
-    if saved_model_weights is not None and not os.path.isfile(saved_model_weights):
+    if model_weights_dir is not None and not os.path.isfile(model_weights_dir):
         raise FileNotFoundError(
-            "Could not find the model weights file {}".format(saved_model_weights)
+            "Could not find the model weights file {}".format(model_weights_dir)
         )
 
     check_model_class_definition_file(model_class_definition_file)
     temporary_directory = tempfile.mkdtemp()
-    if saved_model_weights is not None:
-        model_weight_file = saved_model_weights
+    if model_weights_dir is not None:
+        model_weight_file = model_weights_dir
     else:
         model_weight_file = export_pytorch_weights(model, temporary_directory)
     model_class_file = os.path.join(temporary_directory, "model.py")

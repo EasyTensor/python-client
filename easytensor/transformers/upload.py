@@ -12,12 +12,16 @@ output. You can think of the predict_single method as where the preprocess,
 predict, and postprocess happens.
 """
 import os
+import io
 import tarfile
 import tempfile
 import importlib
 import inspect
 import shutil
 import logging
+from pyflakes.api import checkRecursive
+from pyflakes.reporter import Reporter
+
 from easytensor.auth import needs_auth
 from easytensor.constants import Framework
 from easytensor.upload import (
@@ -26,7 +30,7 @@ from easytensor.upload import (
     upload_archive,
 )
 
-
+# pylint: disable=protected-access
 LOGGER = logging.getLogger(__name__)
 
 
@@ -68,6 +72,16 @@ def check_model_class_definition_file(model_class_definition_file):
                 model_class_definition_file
             )
         )
+    warn_stream = io.StringIO("")
+    error_stream = io.StringIO("")
+    reporter = Reporter(warn_stream, error_stream)
+    num_errors = checkRecursive(["model.py"], reporter)
+    if num_errors > 0:
+        raise BadModelFile(
+            f"Found {num_errors} error(s) in model file. Please fix them and try again.\n"
+            + warn_stream.getvalue()
+        )
+
     module = importlib.import_module(model_class_definition_file[:-3])
     classes = [
         clas[1]
@@ -98,18 +112,29 @@ def upload_model(
     model,
     model_class_definition_file,
     create_token=True,
+    checkpoint_dir=None,
 ):
     """
     Uploads the passed model and the model class definition to be served by EasyTensor.
 
+    If checkpoint_dir is passed, the parameter will be used as the weights
+    file and `model` will be ignored.
+
     Returns the model ID and a query access token.
     Creates a query access token for the model by default.
     """
+    if checkpoint_dir is not None and not os.path.isdir(checkpoint_dir):
+        raise FileNotFoundError(
+            "Could not find the model weights file {}".format(checkpoint_dir)
+        )
+
     check_model_class_definition_file(model_class_definition_file)
     temporary_directory = tempfile.mkdtemp()
-    model_directory = os.path.join(temporary_directory, "model_weights")
-
-    model.save_pretrained(model_directory)
+    if checkpoint_dir is not None:
+        model_directory = checkpoint_dir
+    else:
+        model_directory = os.path.join(temporary_directory, "model_weights")
+        model.save_pretrained(model_directory)
     model_class_file = os.path.join(temporary_directory, "model.py")
     shutil.copy2(model_class_definition_file, model_class_file)
     archive_location = create_model_archive(model_directory, model_class_file)

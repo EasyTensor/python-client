@@ -5,6 +5,7 @@ requires = [
     "tensorflow",
     "torch",
     "transformers",
-    "tqdm"
+    "tqdm",
+    "pyflakes"
 ]
 build-backend = "setuptools.build_meta"
