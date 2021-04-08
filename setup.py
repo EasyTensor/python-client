@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="easytensor",  # Replace with your own username
-    version="0.0.8",
+    version="0.0.9",
     author="Kamal Kamalaldin",
     author_email="kamal@easytensor.com",
     description="The official python cient of EasyTensor",
@@ -13,7 +13,14 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/EasyTensor/python-client",
     packages=setuptools.find_packages(),
-    install_requires=["requests"],
+    install_requires=[
+        "requests",
+        "tensorflow",
+        "torch",
+        "transformers",
+        "tqdm",
+        "pyflakes",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
