@@ -113,7 +113,7 @@ def needs_auth(func):
     def wrapper(*args, **kwargs):
         if not check_auth() and not refresh_auth():
             print("Access token is expired. Please reauthenticate.")
-            # get_auth_token()
+            get_auth_token()
         return func(*args, **kwargs)
 
     return wrapper
